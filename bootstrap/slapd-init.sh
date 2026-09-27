@@ -53,9 +53,11 @@ EOL
 
 make_snakeoil_certificate() {
     echo "Make snakeoil certificate for ${LDAP_DOMAIN}..."
+    # Added explicit -sha256 for OpenSSL 3.x compliance
     openssl req -subj "/CN=${LDAP_DOMAIN}" \
                 -new \
                 -newkey rsa:2048 \
+                -sha256 \
                 -days 365 \
                 -nodes \
                 -x509 \
@@ -98,23 +100,27 @@ configure_ppolicy_overlay(){
 
 load_initial_data() {
     echo "Load data..."
-    local data=$(find ${DATA_DIR} -maxdepth 1 -name \*_\*.ldif -type f | sort)
-    for ldif in ${data}; do
-        echo "Processing file ${ldif}..."
-        ldapadd -x -H ldapi:/// \
-          -D ${LDAP_BINDDN} \
-          -w ${LDAP_SECRET} \
-          -f ${ldif}
-    done
+    if [ -d "${DATA_DIR}" ]; then
+        local data=$(find ${DATA_DIR} -maxdepth 1 -name *_*.ldif -type f | sort)
+        for ldif in ${data}; do
+            echo "Processing file ${ldif}..."
+            ldapadd -x -H ldapi:/// \
+              -D ${LDAP_BINDDN} \
+              -w ${LDAP_SECRET} \
+              -f ${ldif}
+        done
+    fi
 
-    local data=$(find ${DATA_DIR}/large-group -maxdepth 2 -name \*_\*.ldif -type f | sort)
-    for ldif in ${data}; do
-      echo "Processing file ${ldif}..."
-      ldapadd -x -H ldapi:/// \
-        -D ${LDAP_BINDDN} \
-        -w ${LDAP_SECRET} \
-        -f ${ldif}
-    done
+    if [ -d "${DATA_DIR}/large-group" ]; then
+        local large_data=$(find ${DATA_DIR}/large-group -maxdepth 2 -name *_*.ldif -type f | sort)
+        for ldif in ${large_data}; do
+          echo "Processing file ${ldif}..."
+          ldapadd -x -H ldapi:/// \
+            -D ${LDAP_BINDDN} \
+            -w ${LDAP_SECRET} \
+            -f ${ldif}
+        done
+    fi
 }
 
 
@@ -123,6 +129,11 @@ load_initial_data() {
 reconfigure_slapd
 make_snakeoil_certificate
 chown -R openldap:openldap /etc/ldap
+
+# Ensure the runtime directory exists for manual slapd invocation
+mkdir -p /run/slapd
+chown openldap:openldap /run/slapd
+
 slapd -h "ldapi:///" -u openldap -g openldap
 
 configure_base
@@ -133,6 +144,8 @@ configure_memberof_overlay
 configure_ppolicy_overlay
 load_initial_data
 
-kill -INT `cat /run/slapd/slapd.pid`
+if [ -f /run/slapd/slapd.pid ]; then
+    kill -INT $(cat /run/slapd/slapd.pid)
+fi
 
 exit 0

@@ -1,10 +1,10 @@
 # OpenLDAP Docker Image for testing
 
-This image provides an OpenLDAP Server for testing the LDAPjs client. The server
+This image provides an OpenLDAP Server for testing the LDAPjs-promise client. The server
 is initialized with the example domain `planetexpress.com` with data from the
 [Futurama Wiki][futuramawikia]. The original code is from
 [rroemhild/docker-test-openldap][rroemhild]. Additions, e.g. an OU with a large
-number of members, are added to directly support LDAPjs issues.
+number of members, are added to directly support LDAPjs-promise issues.
 
 [futuramawikia]: http://futurama.wikia.com
 [rroemhild]: https://github.com/rroemhild/docker-test-openldap
@@ -17,7 +17,7 @@ Start the container in a terminal:
 $ docker run --rm -it \
   -p 1389:389 \
   -p 1636:636 \
-  ghcr.io/ldapjs/docker-test-openldap/openldap:latest
+  ghcr.io/wslyhbb/docker-test-openldap/openldap:latest
 ```
 
 > Note: instead of `--it` you could use `-d` to start the container in the

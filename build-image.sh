@@ -5,11 +5,11 @@ set -e
 d=$(date +'%Y-%m-%d')
 
 
-BUILDER='ldapjs-builder'
+BUILDER='wslyhbb-builder'
 PLATFORMS='linux/amd64,linux/arm64'
 
 # https://stackoverflow.com/a/49627999/7979
-HAS_BUILDER=$(docker buildx ls | { grep -e '^ldapjs-builder' || test $? = 1; } )
+HAS_BUILDER=$(docker buildx ls | { grep -e '^wslyhbb-builder' || test $? = 1; } )
 if [ -z "${HAS_BUILDER}" ]; then
   docker buildx create \
     --driver docker-container \
@@ -22,7 +22,7 @@ docker buildx build \
   --builder ${BUILDER} \
   --output type=image \
   --push \
-  -t ghcr.io/ldapjs/docker-test-openldap/openldap:${d} \
+  -t ghcr.io/wslyhbb/docker-test-openldap/openldap:${d} \
   .
 
 docker buildx build \
@@ -30,5 +30,5 @@ docker buildx build \
   --builder ${BUILDER} \
   --output type=image \
   --push \
-  -t ghcr.io/ldapjs/docker-test-openldap/openldap:latest \
+  -t ghcr.io/wslyhbb/docker-test-openldap/openldap:latest \
   .
