@@ -1,5 +1,7 @@
 FROM debian:13-slim
 
+LABEL org.opencontainers.image.source https://github.com/wslyhbb/docker-test-openldap
+
 # Install slapd and requirements
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get \
